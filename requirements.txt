@@ -1,0 +1,9 @@
+django
+pymysql
+django_countries
+django-crum
+user-util
+pytz
+django-bootstrap-v5
+requests
+uwsgi
