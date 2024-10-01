@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IPU NAS Server</title>
+    <link rel="stylesheet" href="/static/admin/css/base.css">
+</head>
+<body class=" dashboard">
+<div id="container">
+    <div id="header">
+        <div id="branding">
+            <h1 id="site-name"><a href="/"> IPU NAS Server </a></h1>
+        </div>
+        <div id="user-tools">
+            <a href="/">View site</a> /
+            <a href="/admin/password_change/">Change password</a> /
+            <form id="logout-form" method="post" action="/logout/">
+                {% csrf_token %}
+                <button type="submit">Log out</button>
+            </form>
+        </div>
+    </div>
+    <div id="main" class="main">
+        <div id="content-start" class="content">
+            <div id="content">
+                <h1 id="page-header"><a> Directory listing for {{ current_path }}</a></h1>
+                <hr>
+                <ul>
+                    {% if directories %}
+                    {% for directory in directories %}
+                    <li><a href="{{ directory }}">{{ directory }}</a></li>
+                    {% endfor %}
+                    {% endif %}
+                    {% if files %}
+                    {% for file in files %}
+                    <li><a href="{{ file }}">{{ file }}</a></li>
+                    {% endfor %}
+                    {% endif %}
+                </ul>
+                <hr>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

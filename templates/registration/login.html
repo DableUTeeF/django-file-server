@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IPU NAS Server</title>
+    <link rel="stylesheet" href="/static/admin/css/base.css">
+    <link rel="stylesheet" href="/static/admin/css/login.css">
+</head>
+
+<body class=" login">
+<div id="container">
+    <div id="header">
+        <div id="branding">
+            <h1 id="site-name"><a>IPU NAS Server</a></h1>
+        </div>
+    </div>
+    <div id="main" class="main">
+        <div id="content-start" class="content" tabindex="-1">
+            <div id="content" class="colM">
+                <div id="content-main">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-row">
+                                <label for="id_username" class="required">Username:</label>
+                                <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label for="id_password" class="required">Password:</label>
+                            <input type="password" name="password" autocomplete="current-password" required="" id="id_password">
+                        </div>
+                        <div class="submit-row">
+                            <input type="submit" value="Log in">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="footer"></div>
+        </div>
+    </div>
+</div>
+</body>
+
