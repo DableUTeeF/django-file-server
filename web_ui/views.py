@@ -5,7 +5,7 @@ from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
 
-srcs = '/home/palm/PycharmProjects/django-file-server/demofolder'
+srcs = '/nas'
 
 
 def get_context(request):
