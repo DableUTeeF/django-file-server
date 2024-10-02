@@ -4,6 +4,10 @@ from django.http import HttpResponse
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
+from django.http import StreamingHttpResponse
+import mimetypes
+from wsgiref.util import FileWrapper
+
 
 srcs = '/nas' if os.path.exists('/nas') else '/home/palm/PycharmProjects/django-file-server/demofolder'
 
@@ -16,11 +20,21 @@ def get_context(request):
 
     return context
 
+
 def download(path):
-    response = HttpResponse(content_type='application/force-download')
-    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(os.path.basename(path))
-    response['X-Sendfile'] = smart_str(path)
+    filename = os.path.basename(path)
+    chunk_size = 8192
+    response = StreamingHttpResponse(
+        FileWrapper(
+            open(path, "rb"),
+            chunk_size,
+        ),
+        content_type=mimetypes.guess_type(path)[0],
+    )
+    response["Content-Length"] = os.path.getsize(path)
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
+
 
 @login_required(redirect_field_name=None)
 def files(request, path=''):
