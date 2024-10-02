@@ -32,7 +32,7 @@ def files(request, path=''):
     }
     files = []
     dirs = []
-    for file in os.listdir(os.path.join(srcs, path)):
+    for file in sorted(os.listdir(os.path.join(srcs, path))):
         print(path)
         print(file)
         if os.path.isdir(os.path.join(srcs, path, file)):
@@ -45,8 +45,8 @@ def files(request, path=''):
         else:
             # files.append(os.path.join(path, file))
             files.append(file)
-    context['directories'] = sorted(dirs)
-    context['files'] = sorted(files)
+    context['directories'] = dirs
+    context['files'] = files
 
     return HttpResponse(template.render(context, request))
 
