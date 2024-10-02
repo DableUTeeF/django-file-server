@@ -49,8 +49,6 @@ def files(request, path=''):
     files = []
     dirs = []
     for file in sorted(os.listdir(os.path.join(srcs, path))):
-        print(path)
-        print(file)
         if os.path.isdir(os.path.join(srcs, path, file)):
             # dirs.append(os.path.join(path, file) + '/')
             try:
