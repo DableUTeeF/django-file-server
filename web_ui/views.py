@@ -5,7 +5,7 @@ from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
 
-srcs = '/nas'
+srcs = '/nas' if os.path.exists('/nas') else '/home/palm/PycharmProjects/django-file-server/demofolder'
 
 
 def get_context(request):
@@ -33,10 +33,14 @@ def files(request, path=''):
     files = []
     dirs = []
     for file in os.listdir(os.path.join(srcs, path)):
+        print(path)
+        print(file)
         if os.path.isdir(os.path.join(srcs, path, file)):
-            dirs.append(os.path.join(path, file) + '/')
+            # dirs.append(os.path.join(path, file) + '/')
+            dirs.append(file + '/')
         else:
-            files.append(os.path.join(path, file))
+            # files.append(os.path.join(path, file))
+            files.append(file)
     context['directories'] = sorted(dirs)
     context['files'] = sorted(files)
 
