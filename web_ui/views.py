@@ -37,7 +37,11 @@ def files(request, path=''):
         print(file)
         if os.path.isdir(os.path.join(srcs, path, file)):
             # dirs.append(os.path.join(path, file) + '/')
-            dirs.append({'path': file + '/', 'num': len(os.listdir(os.path.join(srcs, path, file)))})
+            try:
+                num = len(os.listdir(os.path.join(srcs, path, file)))
+            except:
+                continue
+            dirs.append({'path': file + '/', 'num': num})
         else:
             # files.append(os.path.join(path, file))
             files.append(file)
