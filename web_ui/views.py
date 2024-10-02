@@ -40,7 +40,9 @@ def download(path):
 def files(request, path=''):
     template = loader.get_template("files.html")
     if not os.path.isdir(os.path.join(srcs, path)):
-        return download(path)
+        if path.endswith('/'):
+            path = path[:-1]
+        return download(os.path.join(srcs, path))
     context = {
         'current_path': path + '/'
     }
