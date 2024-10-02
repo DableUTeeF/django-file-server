@@ -27,7 +27,7 @@
                 <ul>
                     {% if directories %}
                     {% for directory in directories %}
-                    <li><a href="{{ directory['path'] }}">{{ directory['path'] }} ({{ directory['num'] }})</a></li>
+                    <li><a href="{{ directory.path }}">{{ directory.path }} ({{ directory.num }})</a></li>
                     {% endfor %}
                     {% endif %}
                     {% if files %}
