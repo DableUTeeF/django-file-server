@@ -20,17 +20,17 @@
     <div id="main" class="main">
         <div id="content-start" class="content">
             <div id="content">
-                <h1 id="page-header"><a> Directory listing for {{ current_path }}</a></h1>
+                <h1 id="page-header">{{ navigator|safe }}</h1>
                 <hr>
                 <ul>
                     {% if directories %}
                     {% for directory in directories %}
-                    <li><a href="{{ directory.path }}">{{ directory.path }} ({{ directory.num }})</a></li>
+                    <li class="dlist"><a href="{{ directory.path }}">{{ directory.path }} ({{ directory.num }})</a></li>
                     {% endfor %}
                     {% endif %}
                     {% if files %}
                     {% for file in files %}
-                    <li><a href="{{ file }}">{{ file }}</a></li>
+                    <li class="flist"><a href="{{ file.path }}">{{ file.path }} ({{ file.size }})</a></li>
                     {% endfor %}
                     {% endif %}
                 </ul>
@@ -41,4 +41,29 @@
     </div>
 </div>
 </body>
+<style>
+ul > li {
+    list-style-type: none;
+}
+li.dlist::before {
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    margin-right: 10px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: url('/static/images/folder.png');
+    background-size:contain;
+}
+li.flist::before {
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    margin-right: 10px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: url('/static/images/document.png');
+    background-size:contain;
+}
+</style>
 </html>

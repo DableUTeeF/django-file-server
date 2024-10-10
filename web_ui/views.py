@@ -7,7 +7,7 @@ from django.contrib.auth import logout
 from django.http import StreamingHttpResponse
 import mimetypes
 from wsgiref.util import FileWrapper
-
+import pathlib
 
 srcs = '/nas' if os.path.exists('/nas') else '/home/palm/PycharmProjects/django-file-server/demofolder'
 
@@ -19,6 +19,14 @@ def get_context(request):
     }
 
     return context
+
+
+def sizeof_fmt(num, suffix="B"):
+    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+        if abs(num) < 1024.0:
+            return f"{int(num)}{unit}{suffix}"
+        num /= 1024.0
+    return f"{int(num)}Yi{suffix}"
 
 
 def download(path):
@@ -35,6 +43,16 @@ def download(path):
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
+def get_navigator(path):
+    # <a href="{{ current_path }}">{{ current_path }}</a>
+    nav = '<a href="/files/">HOME</a>/'
+    chunks = path.split('/')
+    for i, chunk in enumerate(chunks):
+        if chunk == '':
+            continue
+        href = os.path.join(*chunks[:i+1])
+        nav += f'<a href="/files/{href}">{chunk}</a>/'
+    return nav
 
 @login_required(redirect_field_name=None)
 def files(request, path=''):
@@ -43,8 +61,10 @@ def files(request, path=''):
         if path.endswith('/'):
             path = path[:-1]
         return download(os.path.join(srcs, path))
+    
     context = {
-        'current_path': path + '/'
+        # 'current_path': '/' + path
+        'navigator': get_navigator(path)
     }
     files = []
     dirs = []
@@ -55,10 +75,11 @@ def files(request, path=''):
                 num = len(os.listdir(os.path.join(srcs, path, file)))
             except:
                 continue
-            dirs.append({'path': file + '/', 'num': num})
+            dirs.append({'path': file, 'num': num})
         else:
             # files.append(os.path.join(path, file))
-            files.append(file)
+            p = pathlib.Path(os.path.join(srcs, path, file))
+            files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size)})
     context['directories'] = dirs
     context['files'] = files
 
