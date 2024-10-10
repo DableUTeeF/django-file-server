@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=hd)9c%n-3#hjhr89mo!xbh7ic-g&r(u)$v@z=f3yu-wp8s^88
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '10.222.44.222']
+ALLOWED_HOSTS = ['0.0.0.0', '10.222.44.222', 'nas-server.ipulab.com', 'nas-ip.ipulab.com', 'nas.ipulab.com', 'n.ipulab.com']
 
 
 # Application definition
