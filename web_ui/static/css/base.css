@@ -1,0 +1,228 @@
+html[data-theme="light"],
+:root {
+    --primary: #79aec8;
+    --secondary: #417690;
+    --accent: #f5dd5d;
+    --primary-fg: #fff;
+
+    --body-fg: #333;
+    --body-bg: #fff;
+    --body-quiet-color: #666;
+    --body-loud-color: #000;
+
+    --header-color: #ffc;
+    --header-branding-color: var(--accent);
+    --header-bg: var(--secondary);
+    --header-link-color: var(--primary-fg);
+
+    --breadcrumbs-fg: #c4dce8;
+    --breadcrumbs-link-fg: var(--body-bg);
+    --breadcrumbs-bg: var(--primary);
+
+    --link-fg: #417893;
+    --link-hover-color: #036;
+    --link-selected-fg: #5b80b2;
+
+    --hairline-color: #e8e8e8;
+    --border-color: #ccc;
+
+    --error-fg: #ba2121;
+
+    --message-success-bg: #dfd;
+    --message-warning-bg: #ffc;
+    --message-error-bg: #ffefef;
+
+    --darkened-bg: #f8f8f8; /* A bit darker than --body-bg */
+    --selected-bg: #e4e4e4; /* E.g. selected table cells */
+    --selected-row: #ffc;
+
+    --button-fg: #fff;
+    --button-bg: var(--primary);
+    --button-hover-bg: #609ab6;
+    --default-button-bg: var(--secondary);
+    --default-button-hover-bg: #205067;
+    --close-button-bg: #747474;
+    --close-button-hover-bg: #333;
+    --delete-button-bg: #ba2121;
+    --delete-button-hover-bg: #a41515;
+
+    --object-tools-fg: var(--button-fg);
+    --object-tools-bg: var(--close-button-bg);
+    --object-tools-hover-bg: var(--close-button-hover-bg);
+
+    --font-family-primary:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        system-ui,
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        sans-serif,
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji";
+    --font-family-monospace:
+        ui-monospace,
+        Menlo,
+        Monaco,
+        "Cascadia Mono",
+        "Segoe UI Mono",
+        "Roboto Mono",
+        "Oxygen Mono",
+        "Ubuntu Monospace",
+        "Source Code Pro",
+        "Fira Mono",
+        "Droid Sans Mono",
+        "Courier New",
+        monospace,
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+    font-family: var(--font-family-primary);
+    color: var(--body-fg);
+    background: var(--body-bg);
+}
+
+/* LINKS */
+
+a:link, a:visited {
+    color: var(--link-fg);
+    text-decoration: none;
+    transition: color 0.15s, background 0.15s;
+}
+
+a:focus, a:hover {
+    color: var(--link-hover-color);
+}
+
+a:focus {
+    text-decoration: underline;
+}
+
+#header {
+    width: auto;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+    background: var(--header-bg);
+    color: var(--header-color);
+    overflow: hidden;
+}
+
+#header a:link, #header a:visited, #logout-form button {
+    color: var(--header-link-color);
+}
+
+#header a:focus , #header a:hover {
+    text-decoration: underline;
+}
+
+#branding {
+    display: flex;
+}
+
+#branding h1 {
+    padding: 0;
+    margin: 0;
+    margin-inline-end: 20px;
+    font-weight: 300;
+    font-size: 1.5rem;
+    color: var(--header-branding-color);
+}
+
+#branding h1 a:link, #branding h1 a:visited {
+    color: var(--accent);
+}
+
+#branding h2 {
+    padding: 0 10px;
+    font-size: 0.875rem;
+    margin: -8px 0 8px 0;
+    font-weight: normal;
+    color: var(--header-color);
+}
+
+#branding a:hover {
+    text-decoration: none;
+}
+
+#logout-form {
+    display: inline;
+}
+
+#logout-form button {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-family-primary);
+}
+
+#container > .main {
+    display: flex;
+    flex: 1 0 auto;
+}
+
+.main > .content {
+    flex:  1 0;
+    max-width: 100%;
+}
+
+#content {
+    padding: 20px 40px;
+}
+
+h1 {
+    margin: 0 0 20px;
+    color: var(--body-quiet-color);
+}
+
+hr {
+    clear: both;
+    color: var(--hairline-color);
+    background-color: var(--hairline-color);
+    height: 1px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    line-height: 1px;
+}
+
+ul > li {
+    list-style-type: none;
+    padding: 0;
+}
+li.dlist::before {
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    margin-right: 10px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: url('/static/images/folder.png');
+    background-size:contain;
+}
+li.flist::before {
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    margin-right: 10px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: url('/static/images/document.png');
+    background-size:contain;
+}
