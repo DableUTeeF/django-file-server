@@ -21,19 +21,35 @@
         <div id="content-start" class="content">
             <div id="content">
                 <h1 id="page-header">{{ navigator|safe }}</h1>
+                {% if redacted %}
+                <h2> Directory contains too many files. Showing only the first 100. </h2>
+                {% endif %}
                 <hr>
-                <ul>
+                <table style="width:100%">
+                    <tr>
+                      <th>Name</th>
+                      <th>Size</th>
+                      <th></th>
+                    </tr>
                     {% if directories %}
                     {% for directory in directories %}
-                    <li class="dlist"><a href="{{ directory.path }}">{{ directory.path }} ({{ directory.num }})</a></li>
+                    <tr href="{{ directory.path }}">
+                        <td><img class="download" src="/static/images/folder.png"><a href="{{ directory.path }}">{{ directory.path }}</a></td>
+                        <td>{{ directory.num }} Files</td>
+                        <td><a href="{{ directory.path }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
+                      </tr>
                     {% endfor %}
                     {% endif %}
                     {% if files %}
                     {% for file in files %}
-                    <li class="flist"><a href="{{ file.path }}">{{ file.path }} ({{ file.size }})</a></li>
+                    <tr href="{{ file.path }}">
+                        <td><img class="download" src="/static/images/document.png"><a href="{{ file.path }}">{{ file.path }}</a></td>
+                        <td>{{ file.size }}</td>
+                        <td><a href="{{ file.path }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
+                      </tr>
                     {% endfor %}
                     {% endif %}
-                </ul>
+                  </table> 
                 <hr>
             </div>
         </div>

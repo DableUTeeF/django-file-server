@@ -216,6 +216,16 @@ li.dlist::before {
     background: url('/static/images/folder.png');
     background-size:contain;
 }
+li.dlist::after {
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    margin-left: 10px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: url('/static/images/downloads.png');
+    background-size:contain;
+}
 li.flist::before {
     filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
     margin-right: 10px;
@@ -226,3 +236,11 @@ li.flist::before {
     background: url('/static/images/document.png');
     background-size:contain;
 }
+.download{
+    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    width: 16px;
+    height: 16px;
+}
+th {
+    text-align: left;
+  } 
