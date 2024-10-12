@@ -17,7 +17,7 @@ import os
 
 
 srcs = '/nas' if os.path.exists('/nas') else '/home/palm/'
-
+max_locked_depth = 2
 
 class FileStream:
     def __init__(self):
@@ -141,6 +141,17 @@ def download(request, path=''):
     return download_directory(path)
 
 
+def user_can_read(path, context):
+    paths = '/'.join(path.split('/')[:max_locked_depth])
+    path = path.split('/')[max_locked_depth]
+    if not paths.endswith('/'):
+        paths += '/'
+    useraccess = UserAccess.objects.filter(username=context['username'], path=paths)
+    if len(useraccess) == 0:
+        return False
+    return path in useraccess[0].reads
+
+
 def get_table(context, path):
     files = []
     dirs = []
@@ -167,7 +178,7 @@ def get_table(context, path):
                 read = True
             if file in writes:
                 write = True
-            if context['is_staff'] or read or len(path.split('/')) > 3:
+            if context['is_staff'] or read or (len(path.split('/')) > max_locked_depth+1 and user_can_read(path, context)):
                 dirs.append({'path': file, 'num': num, 'download': download, 'read': read, 'write': write})
         else:
             # files.append(os.path.join(path, file))
@@ -176,7 +187,7 @@ def get_table(context, path):
                 read = True
             if file in writes:
                 write = True
-            if context['is_staff'] or read or len(path.split('/')) > 3:
+            if context['is_staff'] or read or (len(path.split('/')) > max_locked_depth+1 and user_can_read(path, context)):
                 files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size), 'download': file, 'read': read, 'write': write})
     return files, dirs
 
