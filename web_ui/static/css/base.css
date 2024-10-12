@@ -1,27 +1,27 @@
 html[data-theme="light"],
 :root {
-    --primary: #79aec8;
-    --secondary: #417690;
+    --primary: #840000;
+    --secondary: #BA8376;
     --accent: #f5dd5d;
-    --primary-fg: #fff;
+    --primary-fg: #fff6f2;
 
-    --body-fg: #333;
-    --body-bg: #fff;
+    --body-fg: #582B39;
+    --body-bg: #fff6f2;
     --body-quiet-color: #666;
     --body-loud-color: #000;
 
     --header-color: #ffc;
     --header-branding-color: var(--accent);
-    --header-bg: var(--secondary);
+    --header-bg: var(--primary);
     --header-link-color: var(--primary-fg);
 
     --breadcrumbs-fg: #c4dce8;
     --breadcrumbs-link-fg: var(--body-bg);
     --breadcrumbs-bg: var(--primary);
 
-    --link-fg: #417893;
-    --link-hover-color: #036;
-    --link-selected-fg: #5b80b2;
+    --link-fg: #BA8376;
+    --link-hover-color: #582B39;
+    --link-selected-fg: #BA6356;
 
     --hairline-color: #e8e8e8;
     --border-color: #ccc;
@@ -38,9 +38,9 @@ html[data-theme="light"],
 
     --button-fg: #fff;
     --button-bg: var(--primary);
-    --button-hover-bg: #609ab6;
+    --button-hover-bg: #BA8376;
     --default-button-bg: var(--secondary);
-    --default-button-hover-bg: #205067;
+    --default-button-hover-bg: #582B39;
     --close-button-bg: #747474;
     --close-button-hover-bg: #333;
     --delete-button-bg: #ba2121;
@@ -49,6 +49,8 @@ html[data-theme="light"],
     --object-tools-fg: var(--button-fg);
     --object-tools-bg: var(--close-button-bg);
     --object-tools-hover-bg: var(--close-button-hover-bg);
+
+    --table-hover: #ffffa9;
 
     --font-family-primary:
         -apple-system,
@@ -103,9 +105,17 @@ a:link, a:visited {
     text-decoration: none;
     transition: color 0.15s, background 0.15s;
 }
+a.h1:link, a.h1:visited {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.15s, background 0.15s;
+}
 
 a:focus, a:hover {
     color: var(--link-hover-color);
+}
+a.h1:focus, a.h1:hover {
+    color: var(--secondary);
 }
 
 a:focus {
@@ -171,6 +181,12 @@ a:focus {
     cursor: pointer;
     font-family: var(--font-family-primary);
 }
+#permission-button button {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-family-primary);
+}
 
 #container > .main {
     display: flex;
@@ -187,7 +203,6 @@ a:focus {
 }
 
 h1 {
-    margin: 0 0 20px;
     color: var(--body-quiet-color);
 }
 
@@ -237,10 +252,24 @@ li.flist::before {
     background-size:contain;
 }
 .download{
-    filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%);
+    /* filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%); */
     width: 16px;
     height: 16px;
+    margin-right: 10px;
+    /* margin-left: 10px; */
 }
 th {
     text-align: left;
-  } 
+} 
+table, tr {
+    border: 1px solid var(--breadcrumbs-fg);
+    border-collapse: collapse;
+    border-left: none;
+    border-right: none;
+} 
+tr:hover {
+    background-color: var(--table-hover);
+}
+tr.trheader:hover {
+    background-color: var(--body-bg);
+}

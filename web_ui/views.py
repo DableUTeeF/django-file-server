@@ -1,18 +1,22 @@
+from .models import UserAccess
 from django.contrib.auth.decorators import login_required
-import os
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, FileResponse
+from django.contrib.auth import get_user_model
 import mimetypes
 from wsgiref.util import FileWrapper
 import pathlib
 from io import BytesIO
 import tarfile
+import glob
+import json
+import os
 
 
-srcs = '/nas' if os.path.exists('/nas') else '/home/palm/PycharmProjects/django-file-server/demofolder'
+srcs = '/nas' if os.path.exists('/nas') else '/home/palm/'
 
 
 class FileStream:
@@ -36,6 +40,12 @@ class FileStream:
         self.buffer = BytesIO()
         return s
 
+    @staticmethod
+    def _split_every(n, text):
+        while text:
+            yield text[:n]
+            text = text[n:]
+
     @classmethod
     def yield_tar(cls, file_data_iterable):
         stream = FileStream()
@@ -46,7 +56,19 @@ class FileStream:
             tar_info.mtime = file_date
             tar.addfile(tar_info)
             yield stream.pop()
-
+            for chunk in file_data:
+                bin_chunk = chunk
+                tar_info.size += len(bin_chunk)
+                tar.fileobj.write(bin_chunk)
+                yield stream.pop()
+            blocks, remainder = divmod(tar_info.size, tarfile.BLOCKSIZE)
+            if remainder > 0:
+                tar.fileobj.write(tarfile.NUL * (tarfile.BLOCKSIZE - remainder))
+                yield stream.pop()
+                blocks += 1
+            tar.offset += blocks * tarfile.BLOCKSIZE
+        tar.close()
+        yield stream.pop()
 
 def get_context(request):
     context = {
@@ -79,47 +101,56 @@ def download_single_file(path):
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
-def download_directory(files):
+
+def download_directory(path):
+    files = [pathlib.Path(p) for p in glob.glob(f'{os.path.join(srcs, path)}/*')]
     file_data_iterable = [(
         file.name,
-        file.size,
-        file.date.timestamp(),
-        file.data
+        file.lstat().st_size,
+        file.lstat().st_mtime,
+        FileWrapper(
+            open(file.absolute(), "rb"),
+            tarfile.BLOCKSIZE,
+        )
     ) for file in files]
 
     response = StreamingHttpResponse(
         FileStream.yield_tar(file_data_iterable),
         content_type="application/x-tar"
     )
-    response["Content-Disposition"] = 'attachment; filename="streamed.tar"'
+    response["Content-Disposition"] = f'attachment; filename="{pathlib.Path(path).name}.tar"'
     return response
 
-def get_navigator(path):
+
+def get_navigator(path, prefix='files'):
     # <a href="{{ current_path }}">{{ current_path }}</a>
-    nav = '<a href="/files/">HOME</a>/'
+    nav = f'<a href="/{prefix}/" class="h1" rel="keep-params">HOME</a>/'
     chunks = path.split('/')
     for i, chunk in enumerate(chunks):
         if chunk == '':
             continue
         href = os.path.join(*chunks[:i+1])
-        nav += f'<a href="/files/{href}">{chunk}</a>/'
+        nav += f'<a href="/{prefix}/{href}" class="h1" rel="keep-params">{chunk}</a>/'
     return nav
 
+
 @login_required(redirect_field_name=None)
-def files(request, path=''):
-    template = loader.get_template("files.html")
-    if not os.path.isdir(os.path.join(srcs, path)):
-        if path.endswith('/'):
-            path = path[:-1]
-        return download_single_file(os.path.join(srcs, path))
-    
-    context = {
-        # 'current_path': '/' + path
-        'navigator': get_navigator(path)
-    }
+def download(request, path=''):
+    return download_directory(path)
+
+
+def get_table(context, path):
     files = []
     dirs = []
+    useraccess = UserAccess.objects.filter(username=context['username'], path=path)
+    reads = []
+    writes = []
+    if len(useraccess) > 0:
+        reads = useraccess[0].reads
+        writes = useraccess[0].writes
     for file in sorted(os.listdir(os.path.join(srcs, path))):
+        read = False
+        write = False
         if len(dirs) + len(files) > 100:
             context['redacted'] = True
             break
@@ -129,17 +160,87 @@ def files(request, path=''):
                 num = len(os.listdir(os.path.join(srcs, path, file)))
             except:
                 continue
-            dirs.append({'path': file, 'num': num})
+            download = os.path.join('/download', path, file)
+            if file in reads:
+                read = True
+            if file in writes:
+                write = True
+            if context['is_staff'] or read:
+                dirs.append({'path': file, 'num': num, 'download': download, 'read': read, 'write': write})
         else:
             # files.append(os.path.join(path, file))
             p = pathlib.Path(os.path.join(srcs, path, file))
-            files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size)})
+            if file in reads:
+                read = True
+            if file in writes:
+                write = True
+            if context['is_staff'] or read:
+                files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size), 'download': file, 'read': read, 'write': write})
+    return files, dirs
+
+
+@login_required(redirect_field_name=None)
+def files(request, path=''):
+    template = loader.get_template("files.html")
+    if not os.path.isdir(os.path.join(srcs, path)):
+        if path.endswith('/'):
+            path = path[:-1]
+        return download_single_file(os.path.join(srcs, path))
+    
+    context = get_context(request)
+    context['navigator'] = get_navigator(path)
+    files, dirs = get_table(context, path)
     context['directories'] = dirs
     context['files'] = files
 
     return HttpResponse(template.render(context, request))
 
+
 def logout_view(request):
     logout(request)
     return files(request)
 
+
+@login_required(redirect_field_name=None)
+def permission(request):
+    template = loader.get_template("permission_select.html")
+    User = get_user_model()
+    users = User.objects.all()
+    context = get_context(request)
+    context['users'] = users
+    return HttpResponse(template.render(context, request))
+
+
+@login_required(redirect_field_name=None)
+def permission_view(request, path=''):
+    if not request.GET.get("user"):
+        return permission(request)
+    if request.method == "POST":
+        print(request.GET.get("user"))
+        reads = []
+        writes = []
+        for key in request.POST:
+            if key.startswith('write') and request.POST[key] == 'on':
+                writes.append(key[6:])
+            if key.startswith('read') and request.POST[key] == 'on':
+                reads.append(key[5:])
+        print(reads)
+        print(writes)
+        useraccess = UserAccess(
+            username=request.GET.get("user"),
+            path=path,
+            reads=reads,
+            writes=writes,
+        )
+        useraccess.save()
+        return HttpResponse(b'success')
+
+    else:
+        template = loader.get_template("permissions.html")
+        context = get_context(request)
+        context['navigator'] = get_navigator(path, 'permission_select')
+        files, dirs = get_table(context, path)
+        context['directories'] = dirs
+        context['files'] = files
+
+        return HttpResponse(template.render(context, request))

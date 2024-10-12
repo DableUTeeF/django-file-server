@@ -1,22 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% load static %}
     <title>IPU NAS Server</title>
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
 <div id="container">
-    <div id="header">
-        <div id="branding">
-            <h1 id="site-name"><a href="/"> IPU NAS Server </a></h1>
-        </div>
-        <div id="user-tools">
-            <form id="logout-form" method="post" action="/logout/">
-                {% csrf_token %}
-                <button type="submit">Log out</button>
-            </form>
-        </div>
-    </div>
+    {% include "topbar.html" %}
     <div id="main" class="main">
         <div id="content-start" class="content">
             <div id="content">
@@ -27,17 +18,17 @@
                 <hr>
                 <table style="width:100%">
                     <tr>
-                      <th>Name</th>
-                      <th>Size</th>
-                      <th></th>
+                        <th>Name</th>
+                        <th style="width:40%">Size</th>
+                        <th style="width:10%"></th>
                     </tr>
                     {% if directories %}
                     {% for directory in directories %}
                     <tr href="{{ directory.path }}">
                         <td><img class="download" src="/static/images/folder.png"><a href="{{ directory.path }}">{{ directory.path }}</a></td>
                         <td>{{ directory.num }} Files</td>
-                        <td><a href="{{ directory.path }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
-                      </tr>
+                        <td><a href="{{ directory.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
+                    </tr>
                     {% endfor %}
                     {% endif %}
                     {% if files %}
@@ -45,11 +36,11 @@
                     <tr href="{{ file.path }}">
                         <td><img class="download" src="/static/images/document.png"><a href="{{ file.path }}">{{ file.path }}</a></td>
                         <td>{{ file.size }}</td>
-                        <td><a href="{{ file.path }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
-                      </tr>
+                        <td><a href="{{ file.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
+                    </tr>
                     {% endfor %}
                     {% endif %}
-                  </table> 
+                </table> 
                 <hr>
             </div>
         </div>
