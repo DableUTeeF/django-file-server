@@ -11,7 +11,7 @@ html[data-theme="light"],
     --body-loud-color: #000;
 
     --header-color: #ffc;
-    --header-branding-color: var(--accent);
+    --header-branding-color: var(--primary-fg);
     --header-bg: var(--primary);
     --header-link-color: var(--primary-fg);
 
@@ -32,25 +32,14 @@ html[data-theme="light"],
     --message-warning-bg: #ffc;
     --message-error-bg: #ffefef;
 
-    --darkened-bg: #f8f8f8; /* A bit darker than --body-bg */
-    --selected-bg: #e4e4e4; /* E.g. selected table cells */
-    --selected-row: #ffc;
-
     --button-fg: #fff;
-    --button-bg: var(--primary);
-    --button-hover-bg: #BA8376;
-    --default-button-bg: var(--secondary);
-    --default-button-hover-bg: #582B39;
     --close-button-bg: #747474;
     --close-button-hover-bg: #333;
-    --delete-button-bg: #ba2121;
-    --delete-button-hover-bg: #a41515;
 
-    --object-tools-fg: var(--button-fg);
-    --object-tools-bg: var(--close-button-bg);
-    --object-tools-hover-bg: var(--close-button-hover-bg);
+    --nav-color: #003049;
 
     --table-hover: #ffffa9;
+    --table-header: #669bbc;
 
     --font-family-primary:
         -apple-system,
@@ -106,7 +95,7 @@ a:link, a:visited {
     transition: color 0.15s, background 0.15s;
 }
 a.h1:link, a.h1:visited {
-    color: var(--primary);
+    color: var(--nav-color);
     text-decoration: none;
     transition: color 0.15s, background 0.15s;
 }
@@ -156,7 +145,7 @@ a:focus {
 }
 
 #branding h1 a:link, #branding h1 a:visited {
-    color: var(--accent);
+    color: var(--primary-fg);
 }
 
 #branding h2 {
@@ -269,6 +258,9 @@ table, tr {
 } 
 tr:hover {
     background-color: var(--table-hover);
+}
+tr.trheader {
+    color: var(--table-header);
 }
 tr.trheader:hover {
     background-color: var(--body-bg);

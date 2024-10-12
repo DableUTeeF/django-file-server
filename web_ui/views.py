@@ -70,6 +70,7 @@ class FileStream:
         tar.close()
         yield stream.pop()
 
+
 def get_context(request):
     context = {
         'username': request.user,
@@ -165,7 +166,7 @@ def get_table(context, path):
                 read = True
             if file in writes:
                 write = True
-            if context['is_staff'] or read:
+            if context['is_staff'] or read or len(path.split('/')) > 3:
                 dirs.append({'path': file, 'num': num, 'download': download, 'read': read, 'write': write})
         else:
             # files.append(os.path.join(path, file))
@@ -174,7 +175,7 @@ def get_table(context, path):
                 read = True
             if file in writes:
                 write = True
-            if context['is_staff'] or read:
+            if context['is_staff'] or read or len(path.split('/')) > 3:
                 files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size), 'download': file, 'read': read, 'write': write})
     return files, dirs
 
@@ -238,7 +239,7 @@ def permission_view(request, path=''):
     else:
         template = loader.get_template("permissions.html")
         context = get_context(request)
-        context['navigator'] = get_navigator(path, 'permission_select')
+        context['navigator'] = get_navigator(path, 'permission')
         files, dirs = get_table(context, path)
         context['directories'] = dirs
         context['files'] = files
