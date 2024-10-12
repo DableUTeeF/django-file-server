@@ -40,33 +40,42 @@ class FileStream:
         self.buffer = BytesIO()
         return s
 
-    @staticmethod
-    def _split_every(n, text):
-        while text:
-            yield text[:n]
-            text = text[n:]
-
     @classmethod
-    def yield_tar(cls, file_data_iterable):
+    def yield_tar(cls, file_data_iterable, removed_index):
         stream = FileStream()
         tar = tarfile.TarFile.open(mode='w|', fileobj=stream, bufsize=tarfile.BLOCKSIZE)
-        for file_name, file_size, file_date, file_data in file_data_iterable:
-            tar_info = tarfile.TarInfo(file_name)
-            tar_info.size = int(file_size)
-            tar_info.mtime = file_date
-            tar.addfile(tar_info)
-            yield stream.pop()
-            for chunk in file_data:
-                bin_chunk = chunk
-                tar_info.size += len(bin_chunk)
-                tar.fileobj.write(bin_chunk)
+        for file in file_data_iterable:
+            if file.is_file():
+                file_name = str(file.absolute())[removed_index:]
+                file_size = file.lstat().st_size
+                file_date = file.lstat().st_mtime
+                file_path = file.absolute()
+
+                tar_info = tarfile.TarInfo(file_name)
+                tar_info.size = int(file_size)
+                tar_info.mtime = file_date
+                tar.addfile(tar_info)
                 yield stream.pop()
-            blocks, remainder = divmod(tar_info.size, tarfile.BLOCKSIZE)
-            if remainder > 0:
-                tar.fileobj.write(tarfile.NUL * (tarfile.BLOCKSIZE - remainder))
-                yield stream.pop()
-                blocks += 1
-            tar.offset += blocks * tarfile.BLOCKSIZE
+
+                with open(file_path, 'rb') as file_data:
+                    while True:
+                        data = file_data.read(tarfile.BLOCKSIZE)
+                        if not data:
+                            break
+                        tar.fileobj.write(data)
+                        yield stream.pop()
+
+                blocks, remainder = divmod(tar_info.size, tarfile.BLOCKSIZE)
+                if remainder > 0:
+                    tar.fileobj.write(tarfile.NUL * (tarfile.BLOCKSIZE - remainder))
+                    yield stream.pop()
+                    blocks += 1
+                tar.offset += blocks * tarfile.BLOCKSIZE
+            else:
+                tar_info = tarfile.TarInfo(str(file.absolute())[removed_index:])
+                tar_info.type = b'5'
+                tar.addfile(tar_info)
+
         tar.close()
         yield stream.pop()
 
@@ -104,19 +113,11 @@ def download_single_file(path):
 
 
 def download_directory(path):
-    files = [pathlib.Path(p) for p in glob.glob(f'{os.path.join(srcs, path)}/*')]
-    file_data_iterable = [(
-        file.name,
-        file.lstat().st_size,
-        file.lstat().st_mtime,
-        FileWrapper(
-            open(file.absolute(), "rb"),
-            tarfile.BLOCKSIZE,
-        )
-    ) for file in files]
+    print(srcs, f'{os.path.join(srcs, path)}/*')
+    files = [p for p in pathlib.Path(srcs).rglob(f'{path}/*')]
 
-    response = StreamingHttpResponse(
-        FileStream.yield_tar(file_data_iterable),
+    response = FileResponse(
+        FileStream.yield_tar(files, len(srcs)),
         content_type="application/x-tar"
     )
     response["Content-Disposition"] = f'attachment; filename="{pathlib.Path(path).name}.tar"'
