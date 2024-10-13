@@ -1,6 +1,6 @@
 from .models import UserAccess
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
@@ -115,11 +115,13 @@ def download_single_file(path):
 
 def download_directory(path):
     files = [p for p in sorted(pathlib.Path(srcs).rglob(f'{path}**/*'))]
+    sizes = [p.lstat().st_size for p in files if p.is_file()]
 
     response = FileResponse(
         FileStream.yield_tar(files, len(srcs)),
         content_type="application/x-tar"
     )
+    response["Content-Length"] = sum(sizes)
     response["Content-Disposition"] = f'attachment; filename="{pathlib.Path(path).name}.tar"'
     return response
 
@@ -203,6 +205,8 @@ def files(request, path=''):
     context = get_context(request)
     context['navigator'] = get_navigator(path)
     files, dirs = get_table(context, path, context['username'])
+    if len(files) + len(dirs) == 0:
+        return Http404()
     context['directories'] = dirs
     context['files'] = files
 
