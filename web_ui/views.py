@@ -114,7 +114,7 @@ def download_single_file(path):
 
 def download_directory(path):
     print(srcs, f'{os.path.join(srcs, path)}/*')
-    files = [p for p in pathlib.Path(srcs).rglob(f'{path}/*')]
+    files = [p for p in pathlib.Path(srcs).rglob(f'{path}*')]
 
     response = FileResponse(
         FileStream.yield_tar(files, len(srcs)),
