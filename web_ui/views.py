@@ -1,5 +1,5 @@
 from .models import UserAccess
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.encoding import smart_str
@@ -225,6 +225,7 @@ def permission(request):
 
 
 @login_required(redirect_field_name=None)
+@user_passes_test(lambda u: u.is_superuser)
 def permission_view(request, path=''):
     if not request.GET.get("user"):
         return permission(request)
