@@ -237,10 +237,20 @@ def permission_view(request, path=''):
                 writes.append(key[6:])
             if key.startswith('read') and request.POST[key] == 'on':
                 reads.append(key[5:])
-        UserAccess.objects.filter(username=request.GET.get("user"), path=path).update(
-            reads=reads,
-            writes=writes,
-        )
+        useraccess = UserAccess.objects.filter(username=request.GET.get("user"), path=path)
+        if len(useraccess) > 0:
+            useraccess.update(
+                reads=reads,
+                writes=writes,
+            )
+        else:
+            useraccess = UserAccess(
+                username=request.GET.get("user"),
+                path=path,
+                reads=reads,
+                writes=writes,
+            )
+            useraccess.save()
         return HttpResponse(b'success')
 
     else:
