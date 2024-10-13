@@ -113,7 +113,7 @@ def download_single_file(path):
 
 
 def download_directory(path):
-    files = [p for p in sorted(pathlib.Path(srcs).rglob(f'{path}*'))]
+    files = [p for p in sorted(pathlib.Path(srcs).rglob(f'{path}**/*'))]
 
     response = FileResponse(
         FileStream.yield_tar(files, len(srcs)),
