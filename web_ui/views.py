@@ -114,11 +114,12 @@ def download_single_file(path):
 
 
 def download_directory(path):
-    files = [p for p in sorted(pathlib.Path(os.path.join(srcs, path)).rglob(f'*'))]
+    downloadpath = pathlib.Path(os.path.join(srcs, path))
+    files = [p for p in sorted(downloadpath.rglob(f'*'))]
     sizes = [p.lstat().st_size for p in files if p.is_file()]
 
     response = FileResponse(
-        FileStream.yield_tar(files, len(srcs)),
+        FileStream.yield_tar(files, len(str(downloadpath.absolute()))) - len(downloadpath.name),
         content_type="application/x-tar"
     )
     response["Content-Length"] = sum(sizes)
