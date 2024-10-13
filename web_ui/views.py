@@ -114,7 +114,7 @@ def download_single_file(path):
 
 
 def download_directory(path):
-    files = [p for p in sorted(pathlib.Path(srcs).rglob(f'{path}**/*'))]
+    files = [p for p in sorted(pathlib.Path(os.path.join(srcs, path)).rglob(f'*'))]
     sizes = [p.lstat().st_size for p in files if p.is_file()]
 
     response = FileResponse(
