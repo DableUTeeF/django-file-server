@@ -244,8 +244,14 @@ li.flist::before {
     /* filter: invert(54%) sepia(69%) saturate(7490%) hue-rotate(182deg) brightness(100%) contrast(83%); */
     width: 16px;
     height: 16px;
-    margin-right: 10px;
+    /* margin-right: 10px; */
     /* margin-left: 10px; */
+}
+.copy{
+    cursor:pointer;
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
 }
 th {
     text-align: left;

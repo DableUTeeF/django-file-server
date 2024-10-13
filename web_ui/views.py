@@ -1,18 +1,18 @@
-from .models import UserAccess
+from .models import UserAccess, DownloadToken
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
 from django.http import StreamingHttpResponse, FileResponse
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 import mimetypes
 from wsgiref.util import FileWrapper
 import pathlib
 from io import BytesIO
 import tarfile
-import glob
-import json
+import uuid
 import os
 
 
@@ -99,6 +99,7 @@ def sizeof_fmt(num, suffix="B"):
 
 
 def download_single_file(path):
+    path = os.path.join(srcs, path)
     filename = os.path.basename(path)
     chunk_size = 8192
     response = StreamingHttpResponse(
@@ -142,6 +143,42 @@ def get_navigator(path, prefix='files'):
 @login_required(redirect_field_name=None)
 def download(request, path=''):
     return download_directory(path)
+
+def hash_download(request, hash):
+    if hash.endswith('/'):
+        hash = hash[:-1]
+    tokens = DownloadToken.objects.filter(uuid=hash)
+    if len(tokens) == 0:
+        raise Http404
+    if (timezone.now() - tokens[0].timestamp).days > 7:
+        raise Http404
+    if os.path.isdir(os.path.join(srcs, tokens[0].path)):
+        return download_directory(tokens[0].path)
+    else:
+        return download_single_file(tokens[0].path)
+
+@login_required(redirect_field_name=None)
+def gethash(request):
+    """
+        pathname: window.location.pathname,
+        name: name
+    """
+    if request.method == "POST":
+        context = get_context(request)
+        hash = uuid.uuid4().hex
+        pathname = os.path.join(
+            request.POST['pathname'][7:],
+            request.POST['name'][5:]
+        )
+        tokens = DownloadToken(
+            username=context['username'],
+            path=pathname,
+            timestamp=timezone.now(),
+            uuid=hash,
+        )
+        tokens.save()
+        return JsonResponse({'hash': request.build_absolute_uri('/download/'+hash)})
+    return HttpResponse(status=405)
 
 
 def user_can_read(path, context):
@@ -201,7 +238,7 @@ def files(request, path=''):
     if not os.path.isdir(os.path.join(srcs, path)):
         if path.endswith('/'):
             path = path[:-1]
-        return download_single_file(os.path.join(srcs, path))
+        return download_single_file(path)
     
     context = get_context(request)
     context['navigator'] = get_navigator(path)

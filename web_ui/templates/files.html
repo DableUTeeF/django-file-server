@@ -3,6 +3,7 @@
 <head>
     {% load static %}
     <title>IPU NAS Server</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
@@ -20,7 +21,8 @@
                     <tr class="trheader">
                         <th>Name</th>
                         <th style="width:40%">Size</th>
-                        <th style="width:10%"></th>
+                        <th style="width:5%"></th>
+                        <th style="width:5%"></th>
                     </tr>
                     {% if directories %}
                     {% for directory in directories %}
@@ -28,7 +30,13 @@
                         <td><img class="download" src="/static/images/folder.png"><a href="{{ directory.path }}">{{ directory.path }}</a></td>
                         <td>{{ directory.num }} Files</td>
                         <td><a href="{{ directory.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
-                    </tr>
+                        <td>
+                            <a onclick="copy_download_hash(this.children[0].getAttribute('id'), this.children[1].getAttribute('id'))">
+                                <img class="copy" src="/static/images/copy.png" id="copy-{{ directory.path }}"></img>
+                                <img class="copy" src="/static/images/check.png" id="check-{{ directory.path }}" hidden></img>
+                            </a>
+                        </th>
+                        </tr>
                     {% endfor %}
                     {% endif %}
                     {% if files %}
@@ -37,7 +45,13 @@
                         <td><img class="download" src="/static/images/document.png"><a href="{{ file.path }}">{{ file.path }}</a></td>
                         <td>{{ file.size }}</td>
                         <td><a href="{{ file.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
-                    </tr>
+                        <td>
+                            <a onclick="copy_download_hash(this.children[0].getAttribute('id'), this.children[1].getAttribute('id'))">
+                                <img class="copy" src="/static/images/copy.png" id="copy-{{ file.path }}"></img>
+                                <img class="copy" src="/static/images/check.png" id="check-{{ file.path }}" hidden></img>
+                            </a>
+                        </th>
+                        </tr>
                     {% endfor %}
                     {% endif %}
                 </table> 
@@ -48,4 +62,5 @@
     </div>
 </div>
 </body>
+<script type="text/javascript" src="{% static 'js/copy_download.js' %}"></script>
 </html>
