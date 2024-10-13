@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <title>IPU NAS Server</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/static/css/base.css">
+</head>
+<body>
+<div id="container">
+    {% include "topbar.html" %}
+    <div id="main" class="main">
+        <div id="content-start" class="content">
+            <div id="content">
+                <h1 id="page-header">{{ navigator|safe }}</h1>
+                {% if redacted %}
+                <h2> Directory contains too many files. Showing only the first 100. </h2>
+                {% endif %}
+                <hr>
+                <form id="table-form" method="post">
+                    <input type="submit" value="confirm">
+                    <hr>
+                    {% csrf_token %}
+                    <table style="width:100%" id="data-table">
+                        <tr class="trheader">
+                            <th style="width:10px">R</th>
+                            <th style="width:10px">W</th>
+                            <th>Name</th>
+                            <th style="width:40%">Size</th>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" name="read-all"/></td>
+                            <td><input type="checkbox" name="write-all"/></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% if directories %}
+                        {% for directory in directories %}
+                        <tr href="{{ directory.path }}">
+                            <td><input type="checkbox" name="read-{{ directory.path }}" {% if directory.read %} checked{% endif %}/></td>
+                            <td><input type="checkbox" name="write-{{ directory.path }}" {% if directory.write %} checked{% endif %}/></td>
+                            <td><img class="download" src="/static/images/folder.png"><a href="{{ directory.path }}" rel="keep-params">{{ directory.path }}</a></td>
+                            <td>{{ directory.num }} Files</td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                        {% if files %}
+                        {% for file in files %}
+                        <tr href="{{ file.path }}">
+                            <td><input type="checkbox" name="read-{{ file.path }}" {% if file.read %} checked{% endif %}/></td>
+                            <td><input type="checkbox" name="write-{{ file.path }}" {% if file.write %} checked{% endif %}/></td>
+                            <td><img class="download" src="/static/images/document.png"><a href="{{ file.path }}" rel="keep-params">{{ file.path }}</a></td>
+                            <td>{{ file.size }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </table> 
+                </form>
+                <hr>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="{% static 'js/permissions.js' %}"></script>
+</html>
