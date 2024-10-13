@@ -206,7 +206,7 @@ def files(request, path=''):
     context['navigator'] = get_navigator(path)
     files, dirs = get_table(context, path, context['username'])
     if len(files) + len(dirs) == 0:
-        return Http404
+        raise Http404
     context['directories'] = dirs
     context['files'] = files
 
