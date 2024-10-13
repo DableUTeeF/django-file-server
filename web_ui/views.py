@@ -119,7 +119,7 @@ def download_directory(path):
     sizes = [p.lstat().st_size for p in files if p.is_file()]
 
     response = FileResponse(
-        FileStream.yield_tar(files, len(str(downloadpath.absolute()))) - len(downloadpath.name),
+        FileStream.yield_tar(files, len(str(downloadpath.absolute())) - len(downloadpath.name)),
         content_type="application/x-tar"
     )
     response["Content-Length"] = sum(sizes)
