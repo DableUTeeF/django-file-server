@@ -74,6 +74,7 @@ class FileStream:
             else:
                 tar_info = tarfile.TarInfo(str(file.absolute())[removed_index:])
                 tar_info.type = b'5'
+                tar_info.mode = 0o744
                 tar.addfile(tar_info)
 
         tar.close()
