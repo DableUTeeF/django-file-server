@@ -152,10 +152,10 @@ def user_can_read(path, context):
     return path in useraccess[0].reads
 
 
-def get_table(context, path):
+def get_table(context, path, username):
     files = []
     dirs = []
-    useraccess = UserAccess.objects.filter(username=context['username'], path=path)
+    useraccess = UserAccess.objects.filter(username=username, path=path)
     reads = []
     writes = []
     if len(useraccess) > 0:
@@ -202,7 +202,7 @@ def files(request, path=''):
     
     context = get_context(request)
     context['navigator'] = get_navigator(path)
-    files, dirs = get_table(context, path)
+    files, dirs = get_table(context, path, context['username'])
     context['directories'] = dirs
     context['files'] = files
 
@@ -249,7 +249,7 @@ def permission_view(request, path=''):
         template = loader.get_template("permissions.html")
         context = get_context(request)
         context['navigator'] = get_navigator(path, 'permission')
-        files, dirs = get_table(context, path)
+        files, dirs = get_table(context, path, request.GET.get("user"))
         context['directories'] = dirs
         context['files'] = files
 
