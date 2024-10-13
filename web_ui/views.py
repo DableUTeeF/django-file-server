@@ -17,7 +17,7 @@ import os
 
 
 srcs = '/nas' if os.path.exists('/nas') else '/home/palm/'
-max_locked_depth = 2
+max_locked_depth = 1
 
 class FileStream:
     def __init__(self):
@@ -229,7 +229,6 @@ def permission_view(request, path=''):
     if not request.GET.get("user"):
         return permission(request)
     if request.method == "POST":
-        print(request.GET.get("user"))
         reads = []
         writes = []
         for key in request.POST:
@@ -237,8 +236,6 @@ def permission_view(request, path=''):
                 writes.append(key[6:])
             if key.startswith('read') and request.POST[key] == 'on':
                 reads.append(key[5:])
-        print(reads)
-        print(writes)
         useraccess = UserAccess(
             username=request.GET.get("user"),
             path=path,
