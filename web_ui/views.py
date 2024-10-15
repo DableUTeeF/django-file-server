@@ -213,7 +213,7 @@ def get_table(context, path, username):
                 num = len(os.listdir(os.path.join(srcs, path, file)))
             except:
                 continue
-            download = os.path.join('/download', path, file)
+            download = os.path.join('/directories', path, file)
             if file in reads:
                 read = True
             if file in writes:
