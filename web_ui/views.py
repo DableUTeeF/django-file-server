@@ -16,7 +16,7 @@ import uuid
 import os
 
 
-srcs = '/nas' if os.path.exists('/nas') else '/home/palm/'
+srcs = '/nas' if os.path.exists('/nas') else '/home/palm/PycharmProjects/django-file-server/django_server/'
 max_locked_depth = 1
 
 class FileStream:
