@@ -204,7 +204,7 @@ def get_table(context, path, username):
     for file in sorted(os.listdir(os.path.join(srcs, path))):
         read = False
         write = False
-        if len(dirs) + len(files) > 100 and len(path.split('/')) > max_locked_depth:
+        if len(dirs) + len(files) > 200 and len(path.split('/')) > max_locked_depth:
             context['redacted'] = True
             break
         if os.path.isdir(os.path.join(srcs, path, file)):
