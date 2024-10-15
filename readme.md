@@ -6,5 +6,5 @@ An HTTP File Server with per-user authorization.
 
 <p float="left">
   <img src="/imgs/permission.png" width="40%" />
-  <img src="/imgs/user-index.png" width="50%" /> 
+  <img src="/imgs/user-index.png" width="40%" /> 
 </p>
