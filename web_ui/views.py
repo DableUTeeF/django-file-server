@@ -1,6 +1,6 @@
 from .models import UserAccess, DownloadToken
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse, Http404, JsonResponse
+from django.http import HttpResponse, Http404, JsonResponse, HttpResponseRedirect
 from django.template import loader
 from django.utils.encoding import smart_str
 from django.contrib.auth import logout
@@ -140,8 +140,13 @@ def get_navigator(path, prefix='files'):
     return nav
 
 
-@login_required(redirect_field_name=None)
+# @login_required(redirect_field_name=None)
 def download(request, path=''):
+    if not request.user.is_authenticated:
+        if request.GET.get('next') is not None:
+            if 'logout' in request.GET.get('next'):
+                return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(f'/login?next=/directories/{path}')
     return download_directory(path)
 
 def hash_download(request, hash):
@@ -232,8 +237,14 @@ def get_table(context, path, username):
     return files, dirs
 
 
-@login_required(redirect_field_name=None)
+# @login_required(redirect_field_name=None)
 def files(request, path=''):
+    if not request.user.is_authenticated:
+        if request.GET.get('next') is not None:
+            if 'logout' in request.GET.get('next'):
+                return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(f'/login?next=/files/{path}')
+    
     template = loader.get_template("files.html")
     if not os.path.isdir(os.path.join(srcs, path)):
         if path.endswith('/'):
