@@ -206,7 +206,7 @@ def get_table(context, path, username):
     if len(useraccess) > 0:
         reads = useraccess[0].reads
         writes = useraccess[0].writes
-    for file in sorted(os.listdir(os.path.join(srcs, path))):
+    for file in sorted(os.listdir(os.path.join(srcs, path)), key=str.casefold):
         read = False
         write = False
         if len(dirs) + len(files) > 200 and len(path.split('/')) > max_locked_depth:
