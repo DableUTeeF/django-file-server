@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=hd)9c%n-3#hjhr89mo!xbh7ic-g&r(u)$v@z=f3yu-wp8s^88
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', '10.222.44.222', 'nas-server.ipulab.com', 'nas-ip.ipulab.com', 'nas.ipulab.com', 'n.ipulab.com']
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', '10.222.44.222', '10.222.44.224', 'nas-server.ipulab.com', 'nas-ip.ipulab.com', 'nas.ipulab.com', 'n.ipulab.com']
 CSRF_TRUSTED_ORIGINS = ['https://*.ipulab.com', ]
 
 # Application definition
@@ -76,8 +76,14 @@ WSGI_APPLICATION = 'django_server.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': os.environ['POSTGRES_USERNAME'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': 'postgres',
+        'PORT': '5432', # default PostgreSQL port    
     }
 }
 

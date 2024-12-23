@@ -7,3 +7,4 @@ pytz
 django-bootstrap-v5
 requests
 uwsgi
+psycopg2-binary
