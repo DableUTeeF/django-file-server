@@ -14,12 +14,12 @@
             <div id="content">
                 <form action="/permission/">
                     <label for="user">Select user:</label>
-                    <select id="user" name="user">
+                    <select id="user" name="user" class="util-button">
                         {% for user in users %}
                         <option value="{{ user.username }}">{{ user.username }}</option>
                         {% endfor %}
                     </select>
-                    <input type="submit">
+                    <input type="submit" class="util-button">
                 </form>
             </div>
         </div>

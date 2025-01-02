@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
+<link rel="stylesheet" href="/static/css/base.css?{% now "U" %}"/>
 <div id="container">
     {% include "topbar.html" %}
     <div id="main" class="main">
@@ -18,7 +19,7 @@
                 {% endif %}
                 <hr>
                 <form id="table-form" method="post">
-                    <input type="submit" value="confirm">
+                    <input type="submit" value="confirm" class="util-button">
                     <hr>
                     {% csrf_token %}
                     <table style="width:100%" id="data-table">
