@@ -189,31 +189,34 @@ def gethash(request):
 
 
 def user_can_read(path, context):
-    paths = '/'.join(path.split('/')[:max_locked_depth])
-    path = path.split('/')[max_locked_depth]
-    if not paths.endswith('/'):
-        paths += '/'
-    useraccess = UserAccess.objects.filter(username=context['username'], path=paths)
+    useraccess = UserAccess.objects.filter(username=context['username'], path=path)
     if len(useraccess) == 0:
-        return False
-    return path in useraccess[0].reads
+        return False, False
+    return useraccess[0].reads, useraccess[0].writes
 
 
 def get_table(context, path, username):
+    read = context['is_staff']
+    write = context['is_staff']
+    dirpath = path
+    while True and not context['is_staff']:
+        useraccess = UserAccess.objects.filter(username=username, path=dirpath)
+        if len(useraccess) > 0:
+            read = useraccess[0].reads
+            write = useraccess[0].writes
+            break
+        dirpath, _ = os.path.split(dirpath)
+        if len(dirpath) == 0:
+            break
+    if not read:
+        return [], [], False
     files = []
     dirs = []
-    useraccess = UserAccess.objects.filter(username=username, path=path)
-    reads = []
-    writes = []
-    if len(useraccess) > 0:
-        reads = useraccess[0].reads
-        writes = useraccess[0].writes
     for file in sorted(os.listdir(os.path.join(srcs, path)), key=str.casefold):
-        read = False
-        write = False
         if len(dirs) + len(files) > 200 and len(path.split('/')) > max_locked_depth:
             context['redacted'] = True
             break
+        read, write = user_can_read(path, context)
         if os.path.isdir(os.path.join(srcs, path, file)):
             # dirs.append(os.path.join(path, file) + '/')
             try:
@@ -221,22 +224,12 @@ def get_table(context, path, username):
             except:
                 continue
             download = os.path.join('/directories', path, file)
-            if file in reads:
-                read = True
-            if file in writes:
-                write = True
-            if context['is_staff'] or read or (len(path.split('/')) > max_locked_depth+1 and user_can_read(path, context)):
-                dirs.append({'path': file, 'num': num, 'download': download, 'read': read, 'write': write})
+            dirs.append({'path': file, 'num': num, 'download': download, 'read': read, 'write': write})
         else:
             # files.append(os.path.join(path, file))
             p = pathlib.Path(os.path.join(srcs, path, file))
-            if file in reads:
-                read = True
-            if file in writes:
-                write = True
-            if context['is_staff'] or read or (len(path.split('/')) > max_locked_depth+1 and user_can_read(path, context)):
-                files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size), 'download': file, 'read': read, 'write': write})
-    return files, dirs
+            files.append({'path': file, 'size': sizeof_fmt(p.lstat().st_size), 'download': file, 'read': read, 'write': write})
+    return files, dirs, True
 
 
 # @login_required(redirect_field_name=None)
@@ -255,8 +248,9 @@ def files(request, path=''):
     
     context = get_context(request)
     context['navigator'] = get_navigator(path)
-    files, dirs = get_table(context, path, context['username'])
-    if len(files) + len(dirs) == 0:
+    files, dirs, canread = get_table(context, path, context['username'])
+    # if len(files) + len(dirs) == 0:
+    if not canread:
         raise Http404
     context['directories'] = dirs
     context['files'] = files
@@ -287,32 +281,40 @@ def permission_view(request, path=''):
     if request.method == "POST":
         reads = []
         writes = []
+        items = {}
         for key in request.POST:
             if key.startswith('write') and request.POST[key] == 'on':
                 writes.append(key[6:])
+                if key[6:] not in items:
+                    items[key[6:]] = {'write': False, 'read': False}
+                items[key[6:]]['write'] = True
             if key.startswith('read') and request.POST[key] == 'on':
                 reads.append(key[5:])
-        useraccess = UserAccess.objects.filter(username=request.GET.get("user"), path=path)
-        if len(useraccess) > 0:
-            useraccess.update(
-                reads=reads,
-                writes=writes,
-            )
-        else:
-            useraccess = UserAccess(
-                username=request.GET.get("user"),
-                path=path,
-                reads=reads,
-                writes=writes,
-            )
-            useraccess.save()
+                if key[5:] not in items:
+                    items[key[5:]] = {'write': False, 'read': False}
+                items[key[5:]]['read'] = True
+        for subpath, item in items.items():
+            useraccess = UserAccess.objects.filter(username=request.GET.get("user"), path=os.path.join(path, subpath))
+            if len(useraccess) > 0:
+                useraccess.update(
+                    reads=item['read'],
+                    writes=item['write'],
+                )
+            else:
+                useraccess = UserAccess(
+                    username=request.GET.get("user"),
+                    path=os.path.join(path, subpath),
+                    reads=item['read'],
+                    writes=item['write'],
+                )
+                useraccess.save()
         return HttpResponse(b'success')
 
     else:
         template = loader.get_template("permissions.html")
         context = get_context(request)
         context['navigator'] = get_navigator(path, 'permission')
-        files, dirs = get_table(context, path, request.GET.get("user"))
+        files, dirs, canread = get_table(context, path, request.GET.get("user"))
         context['directories'] = dirs
         context['files'] = files
 
