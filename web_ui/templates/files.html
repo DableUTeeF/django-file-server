@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
+<link rel="stylesheet" href="/static/css/base.css?{% now "U" %}"/>
 <div id="container">
     {% include "topbar.html" %}
     <div id="main" class="main">
@@ -15,6 +16,20 @@
                 <h1 id="page-header">{{ navigator|safe }}</h1>
                 {% if redacted %}
                 <h2> Directory contains too many files. Showing only the first 200. </h2>
+                {% endif %}
+                {% if not readonly %}
+                <div>
+                    <button type="button" class="util-button" id="newdir-button">New Folder</button>
+                    <form id="fileform" action="/fileupload/{{ path }}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ uploadfileform.fileupload }}
+                        <label for="id_fileupload" id="fileupload-label">Select file</label>
+                        <button type="file" class="util-button" id="file-upload-button" onclick="form.submit()"></button>
+                        <!-- <input type="file" class="util-button" id="fileupload" title="File Upload" onchange="form.submit()"></button> -->
+                    </form>
+                    <button type="button" class="util-button" id="folder-upload-button">Folder Upload</button>
+                </div>
+                <br>
                 {% endif %}
                 <hr>
                 <table style="width:100%">
@@ -27,7 +42,7 @@
                     {% if directories %}
                     {% for directory in directories %}
                     <tr href="{{ directory.path }}">
-                        <td><img class="download" src="/static/images/folder.png"><a href="{{ directory.path }}">{{ directory.path }}</a></td>
+                        <td><img class="icon-folder" src="/static/images/folder.png"><a href="{{ directory.path }}">{{ directory.path }}</a></td>
                         <td>{{ directory.num }} Files</td>
                         <td><a href="{{ directory.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
                         <td>
@@ -42,7 +57,7 @@
                     {% if files %}
                     {% for file in files %}
                     <tr href="{{ file.path }}">
-                        <td><img class="download" src="/static/images/document.png"><a href="{{ file.path }}">{{ file.path }}</a></td>
+                        <td><img class="icon-folder" src="/static/images/document.png"><a href="{{ file.path }}">{{ file.path }}</a></td>
                         <td>{{ file.size }}</td>
                         <td><a href="{{ file.download }}"><img class="download" src="/static/images/downloads.png"></img></a></th>
                         <td>
@@ -64,3 +79,11 @@
 </body>
 <script type="text/javascript" src="{% static 'js/copy_download.js' %}"></script>
 </html>
+<script>
+    $(function () {
+        $("#file-upload-button").on("click", function () {
+          $("#fileupload-label").click();
+          $("#fileform").submit();
+        });
+    });
+</script>

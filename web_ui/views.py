@@ -1,3 +1,4 @@
+from .forms import UploadFileForm
 from .models import UserAccess, DownloadToken
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse, Http404, JsonResponse, HttpResponseRedirect
@@ -15,7 +16,7 @@ import tarfile
 import uuid
 import os
 
-
+readonly = os.environ.get('READ_ONLY', False)
 srcs = '/nas' if os.path.exists('/nas') else '/home/palm/'
 max_locked_depth = 1
 
@@ -85,6 +86,7 @@ def get_context(request):
     context = {
         'username': request.user,
         'is_staff': request.user.is_staff,
+        'readonly': readonly
     }
 
     return context
@@ -188,8 +190,8 @@ def gethash(request):
     return HttpResponse(status=405)
 
 
-def user_can_read(path, context):
-    useraccess = UserAccess.objects.filter(username=context['username'], path=path)
+def user_can_read_write(path, name, username):
+    useraccess = UserAccess.objects.filter(username=username, directory=path, name=name)
     if len(useraccess) == 0:
         return False, False
     return useraccess[0].reads, useraccess[0].writes
@@ -197,15 +199,13 @@ def user_can_read(path, context):
 
 def get_table(context, path, username):
     read = context['is_staff']
-    write = context['is_staff']
     dirpath = path
     while True and not context['is_staff']:
-        useraccess = UserAccess.objects.filter(username=username, path=dirpath)
+        dirpath, subpath = os.path.split(dirpath)
+        useraccess = UserAccess.objects.filter(username=username, directory=dirpath + '/', name=subpath)
         if len(useraccess) > 0:
             read = useraccess[0].reads
-            write = useraccess[0].writes
             break
-        dirpath, _ = os.path.split(dirpath)
         if len(dirpath) == 0:
             break
     if not read:
@@ -216,7 +216,7 @@ def get_table(context, path, username):
         if len(dirs) + len(files) > 200 and len(path.split('/')) > max_locked_depth:
             context['redacted'] = True
             break
-        read, write = user_can_read(path, context)
+        read, write = user_can_read_write(path, file, username)
         if os.path.isdir(os.path.join(srcs, path, file)):
             # dirs.append(os.path.join(path, file) + '/')
             try:
@@ -233,7 +233,7 @@ def get_table(context, path, username):
 
 
 # @login_required(redirect_field_name=None)
-def files(request, path=''):
+def files_view(request, path=''):
     if not request.user.is_authenticated:
         if request.GET.get('next') is not None:
             if 'logout' in request.GET.get('next'):
@@ -254,13 +254,15 @@ def files(request, path=''):
         raise Http404
     context['directories'] = dirs
     context['files'] = files
+    context['path'] = path
+    context['uploadfileform'] = UploadFileForm()
 
     return HttpResponse(template.render(context, request))
 
 
 def logout_view(request):
     logout(request)
-    return files(request)
+    return files_view(request)
 
 
 @login_required(redirect_field_name=None)
@@ -293,8 +295,9 @@ def permission_view(request, path=''):
                 if key[5:] not in items:
                     items[key[5:]] = {'write': False, 'read': False}
                 items[key[5:]]['read'] = True
+        useraccesses = UserAccess.objects.filter(username=request.GET.get("user"), directory=path)
         for subpath, item in items.items():
-            useraccess = UserAccess.objects.filter(username=request.GET.get("user"), path=os.path.join(path, subpath))
+            useraccess = useraccesses.filter(name=subpath)
             if len(useraccess) > 0:
                 useraccess.update(
                     reads=item['read'],
@@ -303,7 +306,8 @@ def permission_view(request, path=''):
             else:
                 useraccess = UserAccess(
                     username=request.GET.get("user"),
-                    path=os.path.join(path, subpath),
+                    directory=path,
+                    name=subpath,
                     reads=item['read'],
                     writes=item['write'],
                 )
@@ -315,7 +319,52 @@ def permission_view(request, path=''):
         context = get_context(request)
         context['navigator'] = get_navigator(path, 'permission')
         files, dirs, canread = get_table(context, path, request.GET.get("user"))
+        # print(path)
+        # for di in dirs:
+        #     print(di)
         context['directories'] = dirs
         context['files'] = files
 
         return HttpResponse(template.render(context, request))
+
+def new_folder(request, path):
+    if not request.user.is_authenticated:
+        if request.GET.get('next') is not None:
+            if 'logout' in request.GET.get('next'):
+                return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(f'/login?next=/files/{path}')
+    
+    context = get_context(request)
+    write = context['is_staff']
+    useraccess = UserAccess.objects.filter(username=username, path=path)
+
+
+def handle_uploaded_file(f, path):
+    with open(os.path.join(srcs, path, f.name), "wb+") as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
+def file_upload(request, path):
+    if not request.user.is_authenticated:
+        if request.GET.get('next') is not None:
+            if 'logout' in request.GET.get('next'):
+                return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(f'/login?next=/files/{path}')
+    context = get_context(request)
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES["fileupload"], path)
+    # return files_view(request, path)
+    return HttpResponseRedirect(f'/files/{path}')
+
+
+def folder_upload(request, path):
+    if not request.user.is_authenticated:
+        if request.GET.get('next') is not None:
+            if 'logout' in request.GET.get('next'):
+                return HttpResponseRedirect('/login')
+        return HttpResponseRedirect(f'/login?next=/files/{path}')
+    
+    context = get_context(request)
