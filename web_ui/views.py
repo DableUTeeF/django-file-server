@@ -111,6 +111,7 @@ def download_single_file(path):
     )
     response["Content-Length"] = os.path.getsize(path)
     response["Content-Disposition"] = f"attachment; filename={filename}"
+    response['Accept-Ranges'] = 'bytes'
     return response
 
 
@@ -125,6 +126,7 @@ def download_directory(path):
     )
     response["Content-Length"] = sum(sizes)
     response["Content-Disposition"] = f'attachment; filename="{pathlib.Path(path).name}.tar"'
+    response['Accept-Ranges'] = 'bytes'
     return response
 
 
